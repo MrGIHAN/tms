@@ -6,17 +6,36 @@ const packageSchema = new mongoose.Schema({
         required: true
     },
     description: String,
-    totalPrice: Number,
+    maximumPassenger: {
+        type: Number,
+        required: true
+    },
+    hotels: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Hotel'
+    }],
+    contactNumber: String,
+    email: String,
+    photoGallery: [{
+        location: String,
+        photoUrl: String,
+        isThumbnail: {
+            type: Boolean,
+            default: false
+        }
+    }],
+    location: [String],
+    price: {
+        type: Number,
+        required: true
+    },
+    vehicleType: String,
+    vehicleCount: Number,
     itinerary: [{
-        day: {
-            type: Number,
-            required: true
-        },
         location: {
             type: String,
             required: true
         },
-        hotel: String,
         activities: [String]
     }],
     createdAt: {

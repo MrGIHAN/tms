@@ -3,7 +3,28 @@ const Package = require('../models/Package');
 // Create a new package
 exports.createPackage = async (req, res) => {
     try {
-        const newPackage = new Package(req.body);
+        const packageData = { ...req.body };
+        
+        // Parse JSON fields if they come as strings from form-data
+        if (typeof packageData.hotels === 'string') {
+            packageData.hotels = JSON.parse(packageData.hotels);
+        }
+        if (typeof packageData.location === 'string') {
+            packageData.location = JSON.parse(packageData.location);
+        }
+        if (typeof packageData.itinerary === 'string') {
+            packageData.itinerary = JSON.parse(packageData.itinerary);
+        }
+        
+        // Add compressed images to photoGallery if uploaded
+        if (req.compressedFiles && req.compressedFiles.length > 0) {
+            packageData.photoGallery = req.compressedFiles.map(url => ({
+                photoUrl: url,
+                isThumbnail: false
+            }));
+        }
+        
+        const newPackage = new Package(packageData);
         const savedPackage = await newPackage.save();
         res.status(201).json(savedPackage);
     } catch (error) {
@@ -14,7 +35,7 @@ exports.createPackage = async (req, res) => {
 // Get all packages
 exports.getAllPackages = async (req, res) => {
     try {
-        const packages = await Package.find();
+        const packages = await Package.find().populate('hotels');
         res.json(packages);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -24,7 +45,7 @@ exports.getAllPackages = async (req, res) => {
 // Get a single package by ID
 exports.getPackageById = async (req, res) => {
     try {
-        const package = await Package.findById(req.params.id);
+        const package = await Package.findById(req.params.id).populate('hotels');
         if (!package) return res.status(404).json({ message: 'Package not found' });
         res.json(package);
     } catch (error) {
@@ -35,9 +56,35 @@ exports.getPackageById = async (req, res) => {
 // Update a package
 exports.updatePackage = async (req, res) => {
     try {
+        const packageData = { ...req.body };
+        
+        // Parse JSON fields if they come as strings from form-data
+        if (typeof packageData.hotels === 'string') {
+            packageData.hotels = JSON.parse(packageData.hotels);
+        }
+        if (typeof packageData.location === 'string') {
+            packageData.location = JSON.parse(packageData.location);
+        }
+        if (typeof packageData.itinerary === 'string') {
+            packageData.itinerary = JSON.parse(packageData.itinerary);
+        }
+
+        // Add compressed images to photoGallery if uploaded
+        if (req.compressedFiles && req.compressedFiles.length > 0) {
+            const newImages = req.compressedFiles.map(url => ({
+                photoUrl: url,
+                isThumbnail: false
+            }));
+            
+            // If you want to replace existing images, use the line below
+            packageData.photoGallery = newImages;
+            
+            // If you want to append images, you would need more logic here
+        }
+
         const updatedPackage = await Package.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            packageData,
             { new: true, runValidators: true }
         );
         if (!updatedPackage) return res.status(404).json({ message: 'Package not found' });

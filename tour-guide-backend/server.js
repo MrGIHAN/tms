@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const packageRoutes = require('./routes/packageRoutes');
+const hotelRoutes = require('./routes/hotelRoutes');
+const path = require('path');
 
 const app = express();
 
@@ -11,9 +13,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Serve static files
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/packages', packageRoutes);
+app.use('/api/hotels', hotelRoutes);
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
