@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./tour-guide-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/tourguide
+    depends_on:
+      - mongo
+    networks:
+      - tour-guide-network
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - tour-guide-network
+
+volumes:
+  mongo-data:
+
+networks:
+  tour-guide-network:
